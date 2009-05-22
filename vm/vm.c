@@ -362,11 +362,11 @@ OBJ TrVM_eval(VM, char *code, char *filename) {
 OBJ TrVM_load(VM, char *filename) {
   FILE *fp;
   struct stat stats;
-  
+
   if (stat(filename, &stats) == -1) tr_raise_errno(filename);
   fp = fopen(filename, "rb");
   if (!fp) tr_raise_errno(filename);
-  
+
   char *string = TR_ALLOC_N(char, stats.st_size + 1);
   if (fread(string, 1, stats.st_size, fp) == stats.st_size)
     return TrVM_eval(vm, string, filename);
@@ -384,8 +384,6 @@ OBJ TrVM_run(VM, TrBlock *b, OBJ self, OBJ class, int argc, OBJ argv[]) {
 }
 
 TrVM *TrVM_new() {
-  GC_INIT();
-
   TrVM *vm = TR_ALLOC(TrVM);
   vm->symbols = kh_init(str);
   vm->globals = kh_init(OBJ);
@@ -449,5 +447,4 @@ TrVM *TrVM_new() {
 
 void TrVM_destroy(TrVM *vm) {
   kh_destroy(str, vm->symbols);
-  GC_gcollect();
 }

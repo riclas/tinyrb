@@ -7,19 +7,19 @@
 #include <assert.h>
 #include <errno.h>
 
-#include <gc.h>
 #include <pcre.h>
 
 #include "config.h"
 #include "vendor/kvec.h"
 #include "vendor/khash.h"
+#include "gc.h"
 
 #define UNUSED(expr)         do { (void)(expr); } while (0)
 
 /* allocation macros */
-#define TR_MALLOC            GC_malloc
-#define TR_CALLOC(m,n)       GC_MALLOC((m)*(n))
-#define TR_REALLOC           GC_realloc
+#define TR_MALLOC(n)         GC_alloc(1,n)
+#define TR_CALLOC(m,n)       GC_alloc(m,n)
+#define TR_REALLOC           realloc
 #define TR_FREE(S)           UNUSED(S)
 
 /* type convertion macros */

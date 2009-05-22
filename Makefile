@@ -1,8 +1,7 @@
 CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -D_XOPEN_SOURCE -DDEBUG -g ${OPTIMIZE}
-INCS = -Ivm -Ivendor/gc/include -Ivendor/pcre -Ivendor
-LIBS = ${GC} ${PCRE}
-GC = vendor/gc/.libs/libgc.a
+INCS = -Ivm -Ivendor/pcre -Ivendor
+LIBS = ${PCRE}
 PCRE = vendor/pcre/.libs/libpcre.a
 LEG = vendor/peg/leg
 FREEGETOPT = vendor/freegetopt/getopt.o
@@ -22,7 +21,7 @@ ifneq ($(SYS),Linux)
 LIBS += ${FREEGETOPT}
 endif
 
-SRC = vm/string.c vm/number.c vm/range.c vm/regexp.c vm/primitive.c vm/proc.c vm/array.c vm/hash.c vm/class.c vm/error.c vm/kernel.c vm/object.c vm/block.c vm/compiler.c vm/grammar.c vm/vm.c vm/tr.c
+SRC = vm/string.c vm/number.c vm/range.c vm/regexp.c vm/primitive.c vm/proc.c vm/array.c vm/hash.c vm/class.c vm/error.c vm/kernel.c vm/object.c vm/block.c vm/compiler.c vm/grammar.c vm/vm.c vm/tr.c vm/gc.c
 OBJ = ${SRC:.c=.o}
 OBJ_MIN = vm/tr.o
 
@@ -47,10 +46,6 @@ ${FREEGETOPT}:
 ${LEG}:
 	@echo " make peg/leg"
 	@cd vendor/peg && make -s
-
-${GC}:
-	@echo " make gc"
-	@cd vendor/gc && ./configure --disable-threads -q && make -s
 
 ${PCRE}:
 	@echo " make pcre"
