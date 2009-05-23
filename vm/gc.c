@@ -5,23 +5,25 @@ inline RefCount* GetHeader(void* rc){
 }
 
 void* GC_alloc(size_t size){
-	RefCount* rc = (RefCount*)calloc(1, sizeof(RefCount) + size);
-	if (rc == NULL)	return NULL;
+	void* data = calloc(1, size + sizeof(RefCount));
+	if (data == NULL)
+		return NULL;
+
+	RefCount* rc = (RefCount*) data;
 	rc->refCount = 1;
-	rc+=sizeof(RefCount);printf("%p\n",rc);
-	return rc;
-//return calloc(1, size);
+	return data+sizeof(RefCount);
 }
 
 void* GC_realloc(void* ptr, size_t size){
-printf("%p realloc%d\n", ptr,size);
-	if(ptr == NULL)
+	void* data;
+	if (ptr == NULL)
 		return GC_alloc(size);
-	void* aux = realloc(ptr-sizeof(RefCount), sizeof(RefCount) + size);
-printf("realocou\n");
-	aux+=sizeof(RefCount);
-	return aux;
-//return realloc(ptr, size);
+		
+	ptr -= sizeof(RefCount);
+	data = realloc(ptr, size+sizeof(RefCount));
+	// RefCount* rc = (RefCount*) data;
+	// Do something with RefCount?
+	return data+sizeof(RefCount);
 }
 
 void GC_updateRef(void** l, void* r){
