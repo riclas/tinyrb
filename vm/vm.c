@@ -20,7 +20,7 @@ static OBJ TrVM_lookup(VM, TrBlock *b, OBJ receiver, OBJ msg, TrInst *ip) {
           one is created on polymorphic calls. */
   TrCallSite *s = (kv_pushp(TrCallSite, b->sites));
   s->class = TR_CLASS(receiver);
-  s->miss = 0;
+  s->miss = s->method_missing = 0;
   s->method = method;
   s->message = msg;
   if (unlikely(method == TR_NIL)) {
@@ -188,7 +188,11 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     OP(BOING):      DISPATCH;
     
     /* register loading */
-    OP(MOVE):       R[A] = R[B]; DISPATCH;
+    OP(MOVE):       //if(!TR_IMMEDIATE(R[A]) || !TR_IMMEDIATE(R[B]))
+                      //  GC_updateRef(&R[A], &R[B]); 
+                   // else
+                        R[A] = R[B];
+                    DISPATCH;
     OP(LOADK):      R[A] = k[Bx]; DISPATCH;
     OP(STRING):     R[A] = TrString_new2(vm, strings[Bx]); DISPATCH;
     OP(SELF):       R[A] = f->self; DISPATCH;
