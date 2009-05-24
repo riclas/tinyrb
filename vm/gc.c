@@ -1,17 +1,16 @@
 #include "gc.h"
 
-inline RefCount* GetHeader(void* rc){
-    return ((RefCount*)rc)-1;
+inline GCrefCount* GetHeader(void* rc){
+    return ((GCrefCount*)rc)-1;
 }
 
 void* GC_alloc(size_t size){
-	void* data = calloc(1, size + sizeof(RefCount));
+	void* data = calloc(1, size + sizeof(GCrefCount));
 	if (data == NULL)
 		return NULL;
 
-	RefCount* rc = (RefCount*) data;
-	rc->refCount = 1;
-	return data+sizeof(RefCount);
+	((GCrefCount*) data)->refCount = 1;//printf("%p alloc\n",data + sizeof(GCrefCount));
+	return data + sizeof(GCrefCount);
 }
 
 void* GC_realloc(void* ptr, size_t size){
@@ -19,30 +18,36 @@ void* GC_realloc(void* ptr, size_t size){
 	if (ptr == NULL)
 		return GC_alloc(size);
 		
-	ptr -= sizeof(RefCount);
-	data = realloc(ptr, size+sizeof(RefCount));
-	// RefCount* rc = (RefCount*) data;
-	// Do something with RefCount?
-	return data+sizeof(RefCount);
+	ptr -= sizeof(GCrefCount);
+	data = realloc(ptr, size + sizeof(GCrefCount));
+	return data + sizeof(GCrefCount);
 }
 
-void GC_updateRef(void** l, void* r){
-    if (r != NULL)
+void GC_updateRef(void* l, void* r){
+    if (r != NULL){
         ++(GetHeader(r)->refCount);
-//printf("%d\n",GetHeader(l)->refCount);
-    GC_releaseRef(*l);
-    *l = r;
+//printf("%d\n",GetHeader(r)->refCount);
+}
+printf("%p %p\n",l,r);
+    GC_releaseRef(l);
+    l = r;
 }
 
-void GC_releaseRef(void* pMem)
-{
+void GC_releaseRef(void* pMem){
     if (pMem == NULL) return;
-    RefCount *rc = GetHeader(pMem);
+    GCrefCount *rc = GetHeader(pMem);
     --(rc->refCount);
     if (rc->refCount == 0)
     {
-        //foreach(PVOID pChild in Get_Child(pHdr)) 
-          //  GC_ReleaseRef(pChild);
+	//khiter_t k;
+	//khash_t(OBJ) *h = pMem->ivars;
+        //for (k = kh_begin(h); k != kh_end(h); ++k){
+	//	if (kh_exist(h, k)){
+	//		OBJ v = kh_value(h, k);
+	//		if(!TR_IMMEDIATE(v))
+	//			GC_releaseRef(v);
+	//	}
+	//}
 	printf("freeing pointer\n");
         free(rc);
     }
