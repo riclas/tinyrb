@@ -182,14 +182,14 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     assert(argc <= (int)kv_size(b->locals) && "can't fit args in locals");
     TR_MEMCPY_N(stack, argv, OBJ, argc);
   }
-    printf("opcode %u\n", OPCODE);  
+  
   OPCODES;
 
     OP(BOING):      DISPATCH;
     
     /* register loading */
     OP(MOVE):       if(!TR_IMMEDIATE(R[A]) || !TR_IMMEDIATE(R[B]))
-			GC_updateRef(R[A], R[B]); 
+			GC_updateRef(&R[A], R[B]); 
                     else
                         R[A] = R[B];
                     DISPATCH;
