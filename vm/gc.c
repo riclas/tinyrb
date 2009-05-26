@@ -1,46 +1,30 @@
-#include "gc.h"
+#include "tr.h"
 
-inline GCrefCount* GetHeader(void* rc){
-    return ((GCrefCount*)rc)-1;
-}
-
-void* GC_alloc(size_t size){
-	void* data = calloc(1, size + sizeof(GCrefCount));
+OBJ GC_alloc(void* type){
+	OBJ data = calloc(1, sizeof(type));
 	if (data == NULL)
 		return NULL;
 
-	((GCrefCount*) data)->refCount = 1;//printf("%p alloc\n",data + sizeof(GCrefCount));
-	return data + sizeof(GCrefCount);
+	data->refCount = 1;
+	return data;
 }
 
-void* GC_realloc(void* ptr, size_t size){
-	void* data;
-	if (ptr == NULL)
-		return GC_alloc(size);
-		
-	ptr -= sizeof(GCrefCount);
-	data = realloc(ptr, size + sizeof(GCrefCount));
-	return data + sizeof(GCrefCount);
-}
+void GC_updateRef(OBJ l, OBJ r){
+    if (r != TR_NIL)
+        r->refCount++;
 
-void GC_updateRef(void* l, void* r){
-    if (r != NULL){
-        ++(GetHeader(r)->refCount);
-//printf("%d\n",GetHeader(r)->refCount);
-}
-printf("%p %p\n",l,r);
     GC_releaseRef(l);
     l = r;
 }
 
-void GC_releaseRef(void* pMem){
-    if (pMem == NULL) return;
-    GCrefCount *rc = GetHeader(pMem);
-    --(rc->refCount);
-    if (rc->refCount == 0)
+void GC_releaseRef(OBJ o){
+    if (o == TR_NIL) return;
+    
+    o->refCount--;
+    if (o->refCount == 0)
     {
 	//khiter_t k;
-	//khash_t(OBJ) *h = pMem->ivars;
+	//khash_t(OBJ) *h = o->ivars;
         //for (k = kh_begin(h); k != kh_end(h); ++k){
 	//	if (kh_exist(h, k)){
 	//		OBJ v = kh_value(h, k);
@@ -48,7 +32,7 @@ void GC_releaseRef(void* pMem){
 	//			GC_releaseRef(v);
 	//	}
 	//}
-	printf("freeing pointer\n");
-        free(rc);
+printf("free pointer\n");
+       free(o);
     }
 }

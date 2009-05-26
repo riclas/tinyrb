@@ -12,14 +12,13 @@
 #include "config.h"
 #include "vendor/kvec.h"
 #include "vendor/khash.h"
-#include "gc.h"
 
 #define UNUSED(expr)         do { (void)(expr); } while (0)
 
 /* allocation macros */
-#define TR_MALLOC            GC_alloc
-#define TR_CALLOC(m,n)       GC_alloc((m)*(n))
-#define TR_REALLOC           GC_realloc
+#define TR_MALLOC            malloc
+#define TR_CALLOC(m,n)       calloc(m,n)
+#define TR_REALLOC           realloc
 #define TR_FREE(S)           UNUSED(S)
 
 /* type convertion macros */
@@ -113,11 +112,12 @@
 #define TR_OBJECT_HEADER \
   TR_T type; \
   OBJ class; \
+  int refCount; \
   khash_t(OBJ) *ivars
 
 /* core classes macros */
 #define TR_INIT_CORE_OBJECT(T) ({ \
-  Tr##T *o = TR_ALLOC(Tr##T); \
+  Tr##T *o = GC_alloc(Tr##T); \
   o->type  = TR_T_##T; \
   o->class = vm->classes[TR_T_##T]; \
   o->ivars = kh_init(OBJ); \
@@ -407,5 +407,10 @@ void TrRegexp_init(VM);
 /* compiler */
 TrBlock *TrBlock_compile(VM, char *code, char *fn, size_t lineno);
 void TrBlock_dump(VM, TrBlock *b);
+
+/* GC */
+OBJ GC_alloc(void* type);
+void GC_updateRef(OBJ l, OBJ r);
+void GC_releaseRef(OBJ o);
 
 #endif /* _TINYRB_H_ */

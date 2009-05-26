@@ -182,16 +182,16 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     assert(argc <= (int)kv_size(b->locals) && "can't fit args in locals");
     TR_MEMCPY_N(stack, argv, OBJ, argc);
   }
-  
+    printf("opcode %u\n", OPCODE);  
   OPCODES;
-    
+
     OP(BOING):      DISPATCH;
     
     /* register loading */
-    OP(MOVE):       printf("%u %u %u\n",f->self, R[A],R[B]);if(!TR_IMMEDIATE(R[A]) || !TR_IMMEDIATE(R[B])){printf("1\n");R[A] = R[B];
-			//GC_updateRef(&R[A], &R[B]); 
-                    }else{
-                        R[A] = R[B]; printf("2\n");}
+    OP(MOVE):       if(!TR_IMMEDIATE(R[A]) || !TR_IMMEDIATE(R[B]))
+			GC_updateRef(R[A], R[B]); 
+                    else
+                        R[A] = R[B];
                     DISPATCH;
     OP(LOADK):      R[A] = k[Bx]; DISPATCH;
     OP(STRING):     R[A] = TrString_new2(vm, strings[Bx]); DISPATCH;
@@ -226,7 +226,7 @@ static OBJ TrVM_interpret(VM, register TrFrame *f, TrBlock *b, int start, int ar
     OP(LOOKUP):     VM_RETHROW(call = (TrCallSite*)TrVM_lookup(vm, b, R[A], k[Bx], ip)); DISPATCH;
     OP(CACHE):
       /* TODO how to expire cache? */
-      assert(&SITE[C] && "Method cached but no CallSite found");printf("aa%u\n",TR_CLASS(R[A]));
+      assert(&SITE[C] && "Method cached but no CallSite found");
       if (likely(SITE[C].class == TR_CLASS((R[A])))) {
         call = &SITE[C];
         ip += B;
